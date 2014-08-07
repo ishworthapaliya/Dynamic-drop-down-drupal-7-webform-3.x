@@ -1,0 +1,4 @@
+name = Dynamic dropdown demo
+description = Demonstrate how to create dynamic dropdown fields in webform
+core = 7.x
+

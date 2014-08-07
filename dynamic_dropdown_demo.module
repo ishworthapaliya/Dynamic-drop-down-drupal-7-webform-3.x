@@ -1,0 +1,104 @@
+<?php
+
+function dynamic_dropdown_demo_init() {
+	drupal_add_js(drupal_get_path('module', 'dynamic_dropdown_demo') .'/js/dynamic_dropdown_demo.js');
+}
+
+function dynamic_dropdown_demo_webform_select_options_info() {
+  $items = array();
+  $items['manufacturer'] = array(
+    'options callback' => 'dynamic_dropdown_demo_manufacturer_list',
+    'title' => t('Manufacturer'),
+  );
+  
+  $items['model'] = array(
+    'options callback' => 'dynamic_dropdown_demo_model_list',
+    'title' => 'Model',
+  );
+
+  return $items;
+}
+
+
+function dynamic_dropdown_demo_manufacturer_list() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'manufacturers')
+	->propertyCondition('status', 1);
+	 
+	$result = $query->execute();
+	if($result){
+		$nids = array_keys($result['node']); //Get nid's
+		$nodes = node_load_multiple($nids); //Load nodes using nid's
+		
+		$list = array();
+	    foreach ($nodes as $node) {
+	      $curNode = node_load($node->nid);
+	      $list[$node->nid] = $node->title;
+	    }
+		return $list;
+		}
+		else{
+	      return null;
+		}
+}
+
+function dynamic_dropdown_demo_model_list() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+   ->entityCondition('bundle', 'models')
+   ->propertyCondition('status', 1);
+
+   $result = $query->execute();
+   $nids = array_keys($result['node']); //Get nid's
+   $nodes = node_load_multiple($nids); //Load nodes using nid's
+
+ 	$list = array();
+	
+    foreach ($nodes as $node) {
+      $curNode = node_load($node->nid);
+	  $model = $curNode->title;
+      $list[$curNode->nid] = $model;
+    }
+		
+	return $list;
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+ 
+function dynamic_dropdown_demo_menu() {
+  $items = array();
+ 
+  $items['get-model-list/%'] = array(
+    'page callback' => '_dynamic_dropdown_demo_get_model_select_options',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+ 
+  return $items;
+}
+ 
+ function _dynamic_dropdown_demo_get_model_select_options($arg1) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+		  ->entityCondition('bundle', 'models')
+		  ->propertyCondition('status', 1)
+		  ->fieldCondition('field_manufacturers', 'target_id', $arg1, '=');
+
+		$result = $query->execute();
+		$nids = array_keys($result['node']); //Get nid's
+		$nodes = node_load_multiple($nids); //Load nodes using nid's
+
+	$list = '<option value selected="selected">- Select model -</option>';
+	if($nodes){
+	    foreach ($nodes as $node) {
+	      $curNode = node_load($node->nid);
+	       $list .= "<option value='{$curNode->nid}'>{$model}</option>";
+	      
+	    }
+	}
+		return drupal_json_output(array('html_output' => $list));
+}
