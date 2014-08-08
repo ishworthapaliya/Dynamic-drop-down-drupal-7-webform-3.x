@@ -57,10 +57,8 @@ function dynamic_dropdown_demo_model_list() {
 	
     foreach ($nodes as $node) {
       $curNode = node_load($node->nid);
-	  $model = $curNode->title;
-      $list[$curNode->nid] = $model;
+      $list[$curNode->nid] = $curNode->title;;
     }
-		
 	return $list;
 }
 
@@ -96,9 +94,8 @@ function dynamic_dropdown_demo_menu() {
 	if($nodes){
 	    foreach ($nodes as $node) {
 	      $curNode = node_load($node->nid);
-	       $list .= "<option value='{$curNode->nid}'>{$model}</option>";
-	      
+	       $list .= "<option value='{$curNode->nid}'>{$curNode->title}</option>";
 	    }
 	}
-		return drupal_json_output(array('html_output' => $list));
+	  return drupal_json_output(array('html_output' => $list));
 }
